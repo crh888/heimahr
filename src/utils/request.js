@@ -1,6 +1,7 @@
 import axios from 'axios'
 import store from '@/store'
 import { Message } from 'element-ui'
+import router from '@/router'
 
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
@@ -32,7 +33,14 @@ service.interceptors.response.use(
       return Promise.reject(new Error(message))
     }
   },
-  error => {
+  async error => {
+    if (error.response.status === 401) {
+      Message({ type: 'warning', message: 'Token 超时' })
+      // token 超时
+      await store.dispatch('user/logout') // vuex的退出登录
+      router.push('/login')
+      return Promise.reject(error)
+    }
     Message({ type: 'error', message: error.message })
     return Promise.reject(error)
   }
