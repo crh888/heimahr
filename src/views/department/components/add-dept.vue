@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    title="新增部门"
+    :title="showTitle"
     :visible="showDialog"
     @close="close"
   >
@@ -93,7 +93,13 @@
 </template>
 
 <script>
-import { getDepartment, getManagerList, addDepartment } from '@/api/department'
+import {
+  getDepartment,
+  getManagerList,
+  addDepartment,
+  getDepartmentDetail,
+  updateDepartment
+} from '@/api/department'
 export default {
   props: {
     showDialog: {
@@ -122,7 +128,13 @@ export default {
             trigger: 'blur',
             // eslint-disable-next-line space-before-function-paren
             validator: async (rule, value, callback) => {
-              const result = await getDepartment()
+              let result = await getDepartment()
+              //   判断是否是编辑模式
+              if (this.formData.id) {
+                // 编辑场景
+                result = result.filter(item => item.id !== this.formData.id)
+              }
+              //   result 中是否存在value的值
               if (result.some(item => item.code === value)) {
                 callback(new Error('部门中已存在该编码'))
               } else {
@@ -145,7 +157,11 @@ export default {
             trigger: 'blur',
             // eslint-disable-next-line space-before-function-paren
             validator: async (rule, value, callback) => {
-              const result = await getDepartment()
+              let result = await getDepartment()
+              if (this.formData.id) {
+                // 编辑场景
+                result = result.filter(item => item.id !== this.formData.id)
+              }
               if (result.some(item => item.name === value)) {
                 callback(new Error('部门中已存在该名称'))
               } else {
@@ -158,11 +174,23 @@ export default {
       managerList: []
     }
   },
+  computed: {
+    showTitle() {
+      return this.formData.id ? '编辑部门' : '新增部门'
+    }
+  },
   created() {
     this.getManagerList()
   },
   methods: {
     close() {
+      this.formData = {
+        code: '',
+        introduce: '',
+        managerId: '',
+        name: '',
+        pid: ''
+      }
       //  修改父组件的值
       this.$emit('update:showDialog', false)
       //   重置表单
@@ -174,13 +202,25 @@ export default {
     btnOK() {
       this.$refs.addDept.validate(async isOk => {
         if (isOk) {
-          await addDepartment({ ...this.formData, pid: this.currentNodeId })
+          let message = '新增'
+          if (this.formData.id) {
+            // 编辑场景
+            message = '更新'
+            await updateDepartment(this.formData)
+          } else {
+            // 新增场景
+            await addDepartment({ ...this.formData, pid: this.currentNodeId })
+          }
           //   通知父组件更新
           this.$emit('updateDepartment')
-          this.$message.success('新增成功')
+          this.$message.success(`${message}部门成功`)
           this.close()
         }
       })
+    },
+    // 通过id获取对应组织信息
+    async getDepartmentDetail() {
+      this.formData = await getDepartmentDetail(this.currentNodeId)
     }
   }
 }

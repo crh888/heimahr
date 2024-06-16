@@ -39,6 +39,7 @@
     <!-- 弹窗 -->
     <!-- .sync 接收子组件的事件 update:showDialog 值 赋值给showDialog -->
     <add-dept
+      ref="addDept"
       :current-node-id="currentNodeId"
       :show-dialog.sync="showDialog"
       @updateDepartment="getDepartment"
@@ -80,6 +81,14 @@ export default {
       if (type === 'add') {
         this.showDialog = true
         this.currentNodeId = id
+      } else if (type === 'edit') {
+        //   编辑部门
+        this.showDialog = true
+        this.currentNodeId = id // 记录id 获取数据
+        // props 同步是异步的
+        this.$nextTick(() => {
+          this.$refs.addDept.getDepartmentDetail()
+        })
       }
     }
   }
