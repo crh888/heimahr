@@ -6,6 +6,7 @@
         :data="depts"
         :props="defaultProps"
         default-expand-all
+        :expand-on-click-node="false"
       >
         <template v-slot="{ data }">
           <el-row
@@ -18,16 +19,16 @@
             <el-col :span="4">
               <span class="tree-manager">{{ data.managerName }}</span>
               <!-- 下拉菜单 -->
-              <el-dropdown>
+              <el-dropdown @command="operateDept($event, data.id)">
                 <span class="el-dropdown-link">
                   操作
                   <i class="el-icon-arrow-down el-icon--right" />
                 </span>
                 <!-- 选项 -->
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item>添加此部门</el-dropdown-item>
-                  <el-dropdown-item>编辑部门</el-dropdown-item>
-                  <el-dropdown-item>删除</el-dropdown-item>
+                  <el-dropdown-item command="add">添加此部门</el-dropdown-item>
+                  <el-dropdown-item command="edit">编辑部门</el-dropdown-item>
+                  <el-dropdown-item command="del">删除</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </el-col>
@@ -35,20 +36,33 @@
         </template>
       </el-tree>
     </div>
+    <!-- 弹窗 -->
+    <!-- .sync 接收子组件的事件 update:showDialog 值 赋值给showDialog -->
+    <add-dept
+      :current-node-id="currentNodeId"
+      :show-dialog.sync="showDialog"
+      @updateDepartment="getDepartment"
+    />
   </div>
 </template>
 <script>
 import { getDepartment } from '@/api/department'
 import { transListToTreeData } from '@/utils'
+import AddDept from './components/add-dept.vue'
 export default {
   name: 'Department',
+  components: {
+    AddDept
+  },
   data() {
     return {
       depts: [], // 数据属性
       defaultProps: {
         label: 'name', // 显示的字段的名字
         children: 'children' // 读取子节点的字段名
-      }
+      },
+      showDialog: false,
+      currentNodeId: null // 存储当前点击的Id
     }
   },
   created() {
@@ -59,6 +73,14 @@ export default {
     async getDepartment() {
       const result = await getDepartment()
       this.depts = transListToTreeData(result, 0)
+    },
+    // 操作部门
+    operateDept(type, id) {
+      // 添加子部门
+      if (type === 'add') {
+        this.showDialog = true
+        this.currentNodeId = id
+      }
     }
   }
 }
