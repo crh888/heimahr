@@ -47,7 +47,7 @@
   </div>
 </template>
 <script>
-import { getDepartment } from '@/api/department'
+import { delDepartment, getDepartment } from '@/api/department'
 import { transListToTreeData } from '@/utils'
 import AddDept from './components/add-dept.vue'
 export default {
@@ -88,6 +88,21 @@ export default {
         // props 同步是异步的
         this.$nextTick(() => {
           this.$refs.addDept.getDepartmentDetail()
+        })
+      } else {
+        // 删除部门
+        this.$confirm('此操作将永久删除该部门, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+          // eslint-disable-next-line space-before-function-paren
+        }).then(async () => {
+          await delDepartment(id)
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          })
+          this.getDepartment()
         })
       }
     }
