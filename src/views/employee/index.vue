@@ -1,12 +1,207 @@
 <template>
   <div class="container">
     <div class="app-container">
-      员工
+      <div class="left">
+        <el-input
+          style="margin-bottom: 10px"
+          type="text"
+          prefix-icon="el-icon-search"
+          size="small"
+          placeholder="输入员工姓名全员搜索"
+        />
+        <!-- 树形组件 -->
+        <el-tree
+          ref="deptTree"
+          node-key="id"
+          :data="depts"
+          :props="defaultProps"
+          :expand-on-click-node="false"
+          default-expand-all
+          highlight-current
+          @current-change="selectNode"
+        />
+      </div>
+      <div class="right">
+        <el-row
+          class="opeate-tools"
+          type="flex"
+          justify="end"
+        >
+          <el-button
+            size="mini"
+            type="primary"
+          >
+            添加员工
+          </el-button>
+          <el-button size="mini">excel导入</el-button>
+          <el-button size="mini">excel导出</el-button>
+        </el-row>
+        <!-- 表格组件 -->
+        <el-table :data="list">
+          <el-table-column
+            align="center"
+            label="头像"
+            prop="staffPhoto"
+          >
+            <template v-slot="{ row }">
+              <el-avatar
+                v-if="row.staffPhoto"
+                :src="row.staffPhoto"
+                :size="30"
+              />
+              <span
+                v-else
+                class="username"
+              >
+                {{ row.username[0] }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="username"
+            label="姓名"
+          />
+          <el-table-column
+            sortable
+            label="手机号"
+            prop="mobile"
+          />
+          <el-table-column
+            sortable
+            label="工号"
+            prop="workNumber"
+          />
+          <el-table-column
+            prop="formOfEmployment"
+            label="聘用形式"
+          >
+            <template v-slot="{ row }">
+              <span>{{ row.formOfEmployment === 1 ? '正式' : '非正式' }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="departmentName"
+            label="部门"
+          />
+          <el-table-column
+            sortable
+            label="入职事件"
+            prop="timeOfEntry"
+          />
+          <el-table-column
+            label="操作"
+            width="280px"
+          >
+            <template>
+              <el-button
+                type="text"
+                size="mini"
+              >
+                查看
+              </el-button>
+              <el-button
+                type="text"
+                size="mini"
+              >
+                角色
+              </el-button>
+              <el-button
+                type="text"
+                size="mini"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <!-- 分页 -->
+        <el-row
+          type="flex"
+          align="middle"
+          justify="end"
+          style="height: 60px"
+        >
+          <el-pagination
+            layout="total, prev, pager, next"
+            :total="50"
+          />
+        </el-row>
+      </div>
     </div>
   </div>
 </template>
+
 <script>
+import { getDepartment } from '@/api/department'
+import { getEmployeeList } from '@/api/employee'
+import { transListToTreeData } from '@/utils'
 export default {
-  name: 'Employee'
+  name: 'Employee',
+  data() {
+    return {
+      depts: [],
+      defaultProps: {
+        label: 'name',
+        children: 'children'
+      },
+      queryParams: {
+        departmentId: null
+      },
+      list: []
+    }
+  },
+  created() {
+    this.getDepartment()
+  },
+  methods: {
+    async getDepartment() {
+      this.depts = transListToTreeData(await getDepartment(), 0)
+      this.queryParams.departmentId = this.depts[0].id
+      this.$nextTick(() => {
+        this.$refs.deptTree.setCurrentKey(this.queryParams.departmentId)
+      })
+      this.getEmployeeList()
+    },
+    // 选中树节点变化的事件
+    selectNode(node) {
+      this.queryParams.departmentId = node.id
+      this.getEmployeeList()
+    },
+    async getEmployeeList() {
+      const { rows } = await getEmployeeList(this.queryParams)
+      this.list = rows
+    }
+  }
 }
 </script>
+
+<style lang="scss" scoped>
+.app-container {
+  background: #fff;
+  display: flex;
+  .left {
+    width: 280px;
+    padding: 20px;
+    border-right: 1px solid #eaeef4;
+  }
+  .right {
+    flex: 1;
+    padding: 20px;
+    .opeate-tools {
+      margin: 10px;
+    }
+    .username {
+      height: 30px;
+      width: 30px;
+      line-height: 30px;
+      text-align: center;
+      border-radius: 50%;
+      color: #fff;
+      background: #04c9be;
+      font-size: 12px;
+      display: inline-block;
+    }
+  }
+}
+</style>
+
