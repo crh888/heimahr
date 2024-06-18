@@ -5,7 +5,7 @@ import router from '@/router'
 
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
-  timeout: 10000 // ms
+  timeout: 50000 // ms
 }) // 创建一个新的axios对象
 
 service.interceptors.request.use(
@@ -24,8 +24,9 @@ service.interceptors.request.use(
 
 service.interceptors.response.use(
   response => {
+    if (response.data instanceof Blob) return response.data // 返回 Blob 对象
     // axios 默认包裹一层data
-    const { data, message, success } = response.data
+    const { data, message, success } = response.data // 默认json格式
     if (success) {
       return data
     } else {
