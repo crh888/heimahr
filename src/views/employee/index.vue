@@ -104,7 +104,7 @@
             label="操作"
             width="280px"
           >
-            <template>
+            <template v-slot="{ row }">
               <el-button
                 type="text"
                 size="mini"
@@ -117,12 +117,19 @@
               >
                 角色
               </el-button>
-              <el-button
-                type="text"
-                size="mini"
+              <el-popconfirm
+                title="这位员工确定删除吗？"
+                @onConfirm="confirmDel(row.id)"
               >
-                删除
-              </el-button>
+                <el-button
+                  slot="reference"
+                  size="mini"
+                  type="text"
+                  style="margin-left: 10px"
+                >
+                  删除
+                </el-button>
+              </el-popconfirm>
             </template>
           </el-table-column>
         </el-table>
@@ -152,7 +159,7 @@
 
 <script>
 import { getDepartment } from '@/api/department'
-import { getEmployeeList, exportEmployee } from '@/api/employee'
+import { getEmployeeList, exportEmployee, delEmployee } from '@/api/employee'
 import { transListToTreeData } from '@/utils'
 import fileSaver from 'file-saver'
 import ImportExcel from './components/import-excel.vue'
@@ -218,6 +225,14 @@ export default {
     async exportEmployee() {
       const res = await exportEmployee()
       fileSaver.saveAs(res, '员工信息表.xlsx') // 下载文件
+    },
+    async confirmDel(id) {
+      await delEmployee(id)
+      if (this.list.length === 1 && this.queryParams.page > 1) {
+        this.queryParams.page--
+      }
+      this.getEmployeeList()
+      this.$message.success('删除员工成功')
     }
   }
 }
