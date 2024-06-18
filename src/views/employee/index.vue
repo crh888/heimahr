@@ -3,11 +3,13 @@
     <div class="app-container">
       <div class="left">
         <el-input
+          v-model="queryParams.keyword"
           style="margin-bottom: 10px"
           type="text"
           prefix-icon="el-icon-search"
           size="small"
           placeholder="输入员工姓名全员搜索"
+          @input="changeValue"
         />
         <!-- 树形组件 -->
         <el-tree
@@ -150,7 +152,8 @@ export default {
       queryParams: {
         departmentId: null,
         page: 1,
-        pageSize: 10
+        pageSize: 10,
+        keyword: ''
       },
       list: [],
       total: 0
@@ -182,6 +185,14 @@ export default {
     changePage(newPage) {
       this.queryParams.page = newPage
       this.getEmployeeList()
+    },
+    // 输入值内容改变时触发
+    changeValue() {
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
+        this.queryParams.page = 1
+        this.getEmployeeList()
+      }, 500)
     }
   }
 }
