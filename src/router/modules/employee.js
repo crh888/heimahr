@@ -1,5 +1,4 @@
 import layout from '@/layout'
-import { title } from '@/settings'
 export default {
   path: '/employee',
   component: layout,
