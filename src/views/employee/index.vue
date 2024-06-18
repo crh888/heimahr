@@ -32,6 +32,7 @@
           <el-button
             size="mini"
             type="primary"
+            @click="$router.push('/employee/detail')"
           >
             添加员工
           </el-button>
