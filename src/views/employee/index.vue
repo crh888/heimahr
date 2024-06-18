@@ -143,7 +143,10 @@
         </el-row>
       </div>
     </div>
-    <import-excel :show-excel-dialog.sync="showExcelDialog" />
+    <import-excel
+      :show-excel-dialog.sync="showExcelDialog"
+      @uploadSuccess="getEmployeeList"
+    />
   </div>
 </template>
 

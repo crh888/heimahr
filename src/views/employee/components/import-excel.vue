@@ -16,6 +16,7 @@
           class="excel-upload-input"
           type="file"
           accept=".xlsx, .xls"
+          @change="uploadChange"
         />
         <div class="drop">
           <i class="el-icon-upload" />
@@ -27,7 +28,12 @@
           </el-button>
           <span>
             将文件拖到此处或
-            <el-button type="text">点击上传</el-button>
+            <el-button
+              type="text"
+              @click="handleUpload"
+            >
+              点击上传
+            </el-button>
           </span>
         </div>
       </div>
@@ -48,7 +54,7 @@
   </el-dialog>
 </template>
 <script>
-import { getExportTemplate } from '@/api/employee'
+import { getExportTemplate, uploadExcel } from '@/api/employee'
 import fileSaver from 'file-saver'
 export default {
   props: {
@@ -61,6 +67,26 @@ export default {
     async getTemplate() {
       const res = await getExportTemplate()
       fileSaver.saveAs(res, '员工信息导入模板.xlsx')
+    },
+    // 弹出文件选择器
+    handleUpload() {
+      this.$refs['excel-upload-input'].click()
+    },
+    async uploadChange(event) {
+      const files = event.target.files
+      if (files.length > 0) {
+        const data = new FormData()
+        data.append('file', files[0])
+        try {
+          await uploadExcel(data)
+          this.$emit('update:showExcelDialog', false)
+          this.$emit('uploadSuccess') // 通知父组件上传成功
+          // eslint-disable-next-line no-empty
+        } catch (error) {
+        } finally {
+          this.$refs['excel-upload-input'].value = ''
+        }
+      }
     }
   }
 }
