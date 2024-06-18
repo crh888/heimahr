@@ -123,7 +123,10 @@
         >
           <el-pagination
             layout="total, prev, pager, next"
-            :total="50"
+            :total="total"
+            :current-page="queryParams.page"
+            :page-size="queryParams.pageSize"
+            @current-change="changePage"
           />
         </el-row>
       </div>
@@ -145,9 +148,12 @@ export default {
         children: 'children'
       },
       queryParams: {
-        departmentId: null
+        departmentId: null,
+        page: 1,
+        pageSize: 10
       },
-      list: []
+      list: [],
+      total: 0
     }
   },
   created() {
@@ -165,11 +171,17 @@ export default {
     // 选中树节点变化的事件
     selectNode(node) {
       this.queryParams.departmentId = node.id
+      this.queryParams.page = 1
       this.getEmployeeList()
     },
     async getEmployeeList() {
-      const { rows } = await getEmployeeList(this.queryParams)
+      const { rows, total } = await getEmployeeList(this.queryParams)
       this.list = rows
+      this.total = total
+    },
+    changePage(newPage) {
+      this.queryParams.page = newPage
+      this.getEmployeeList()
     }
   }
 }
