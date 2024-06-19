@@ -109,6 +109,7 @@
               <el-button
                 type="text"
                 size="mini"
+                @click="$router.push(`/employee/detail/${row.id}`)"
               >
                 查看
               </el-button>

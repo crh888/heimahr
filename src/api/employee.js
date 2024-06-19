@@ -64,3 +64,23 @@ export function addEmployee(data) {
     data
   })
 }
+
+/**
+ * 获取员工详情
+ */
+export function getEmployeeDetail(id) {
+  return request({
+    url: `/sys/user/${id}`
+  })
+}
+
+/**
+ * 修改员工信息
+ */
+export function updateEmployee(data) {
+  return request({
+    url: `/sys/user/${data.id}`,
+    method: 'put',
+    data
+  })
+}
