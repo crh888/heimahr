@@ -61,7 +61,10 @@
                 prop="departmentId"
               >
                 <!-- 放置及联部门组件 -->
-                <select-tree class="inputW" />
+                <select-tree
+                  v-model="userInfo.departmentId"
+                  class="inputW"
+                />
               </el-form-item>
             </el-col>
           </el-row>
@@ -136,6 +139,7 @@
               <el-button
                 size="mini"
                 type="primary"
+                @click="saveData"
               >
                 保存更新
               </el-button>
@@ -149,6 +153,7 @@
 
 <script>
 import selectTree from './components/select-tree.vue'
+import { addEmployee } from '@/api/employee'
 export default {
   components: {
     selectTree
@@ -210,7 +215,14 @@ export default {
   },
   methods: {
     saveData() {
-      this.$refs.userForm.validate()
+      this.$refs.userForm.validate(async isOK => {
+        if (isOK) {
+          await addEmployee(this.userInfo)
+          this.$message.success('新增员工成功')
+          this.$refs.userForm.resetFields()
+          this.$router.push('/employee')
+        }
+      })
     }
   }
 }
