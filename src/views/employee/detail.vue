@@ -61,6 +61,7 @@
                 prop="departmentId"
               >
                 <!-- 放置及联部门组件 -->
+                <select-tree class="inputW" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -147,7 +148,11 @@
 </template>
 
 <script>
+import selectTree from './components/select-tree.vue'
 export default {
+  components: {
+    selectTree
+  },
   data() {
     return {
       userInfo: {
