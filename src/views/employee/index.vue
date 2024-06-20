@@ -116,6 +116,7 @@
               <el-button
                 type="text"
                 size="mini"
+                @click="btnRole(row.id)"
               >
                 角色
               </el-button>
@@ -156,12 +157,54 @@
       :show-excel-dialog.sync="showExcelDialog"
       @uploadSuccess="getEmployeeList"
     />
+    <el-dialog
+      :visible.sync="showRoleDialog"
+      title="分配角色"
+    >
+      <el-checkbox-group v-model="roleIds">
+        <el-checkbox
+          v-for="item in roleList"
+          :key="item.id"
+          :label="item.id"
+        >
+          {{ item.name }}
+        </el-checkbox>
+      </el-checkbox-group>
+      <el-row
+        slot="footer"
+        type="flex"
+        justify="center"
+      >
+        <el-col :span="6">
+          <el-button
+            size="mini"
+            type="primary"
+            @click="btnRoleOK"
+          >
+            确定
+          </el-button>
+          <el-button
+            size="mini"
+            @click="showRoleDialog = false"
+          >
+            取消
+          </el-button>
+        </el-col>
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { getDepartment } from '@/api/department'
-import { getEmployeeList, exportEmployee, delEmployee } from '@/api/employee'
+import {
+  getEmployeeList,
+  exportEmployee,
+  delEmployee,
+  getEnableRoleList,
+  getEmployeeDetail,
+  assignRole
+} from '@/api/employee'
 import { transListToTreeData } from '@/utils'
 import fileSaver from 'file-saver'
 import ImportExcel from './components/import-excel.vue'
@@ -185,7 +228,11 @@ export default {
       },
       list: [],
       total: 0,
-      showExcelDialog: false
+      showExcelDialog: false,
+      showRoleDialog: false,
+      roleList: [],
+      roleIds: [],
+      currentUserId: null
     }
   },
   created() {
@@ -235,6 +282,21 @@ export default {
       }
       this.getEmployeeList()
       this.$message.success('删除员工成功')
+    },
+    async btnRole(id) {
+      this.roleList = await getEnableRoleList()
+      this.currentUserId = id
+      const { roleIds } = await getEmployeeDetail(id)
+      this.roleIds = roleIds
+      this.showRoleDialog = true
+    },
+    async btnRoleOK() {
+      await assignRole({
+        id: this.currentUserId,
+        roleIds: this.roleIds
+      })
+      this.$message.success('分配用户角色成功')
+      this.showRoleDialog = false
     }
   }
 }
